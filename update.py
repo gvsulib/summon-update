@@ -260,9 +260,9 @@ summonFTP = ftplib.FTP("ftp.summon.serialssolutions.com", "gvsu", credentials.FT
 
 summonFTP.cwd('/updates') 
 
-#filename = "STOR " + filename
+filename = "STOR " + filename
 
-#summonFTP.storbinary(filename, file)
+summonFTP.storbinary(filename, file)
 
 summonFTP.quit()
 
