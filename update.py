@@ -15,10 +15,13 @@ import ftplib
 #modules for creating and working with dates and times
 import datetime
 import pytz
+import time
 
 #access credentials, kept in separate file
 import credentials
 
+#need this to grab command-line arguments
+import sys
 
 #libraries to send emails
 import smtplib
@@ -54,30 +57,58 @@ def sendEmail(msgString, subject, address, error=None, timestamp=""):
 		print("Error: unable to send email")
 
 
-
-#set the time parameters for the query.  We want any record updated since 1:00AM the previous day
 eastern = pytz.timezone("US/Eastern")
-
 now = datetime.datetime.now(eastern)
-
-offset = datetime.timedelta(hours=24)
-
-previous = now - offset
-
-previous = previous.strftime("%Y-%m-%dT%H:%M:%S")
-
-#format dates for use in query string
-
 filename = "TEST_DO_NOT_USE_gvsu" + now.strftime("%Y-%m-%d") + ".out"
-
 timestamp = now.strftime("%Y-%m-%d:%H:%M")
 
-now = now.strftime("%Y-%m-%dT%H:%M:%S")
+if len(sys.argv) == 1:
 
-searchString = "[" + previous + "Z," + now + "Z]"
-print("Trying to retrieve records modified between {} and {}".format(previous, now))
 
-print("Attempting to obtaina ccess token")
+	#set the time parameters for the query.  We want any record updated since 1:00AM the previous day
+
+	offset = datetime.timedelta(hours=24)
+
+	startDate = now - offset
+
+	startDate = startDate.strftime("%Y-%m-%dT%H:%M:%S")
+
+	#format dates for use in query string
+
+	endDate = now.strftime("%Y-%m-%dT%H:%M:%S")
+else:
+	if len(sys.argv) < 3:
+		print("You must supply both a start and end date.")
+		quit()
+
+	try:
+		datetime.datetime.strptime(sys.argv[1], '%Y-%m-%dT%H:%M:%S')
+	except ValueError:
+		print("Incorrect data format for start date, should be YYYY-MM-DDTHH:MM:SS")
+		quit()
+
+	try:
+		datetime.datetime.strptime(sys.argv[2], '%Y-%m-%dT%H:%M:%S')
+	except ValueError:
+		print("Incorrect data format for end date, should be YYYY-MM-DDTHH:MM:SS")
+		quit()
+
+	startTime = time.mktime(datetime.datetime.strptime(sys.argv[1], '%Y-%m-%dT%H:%M:%S').timetuple())
+	endTime = time.mktime(datetime.datetime.strptime(sys.argv[2], '%Y-%m-%dT%H:%M:%S').timetuple())
+
+	if startTime > endTime:
+		print("Start date must be before end date.")
+		quit(1)
+	
+	endDate = sys.argv[2]
+	startDate = sys.argv[1]
+
+
+
+searchString = "[" + startDate + "Z," + endDate + "Z]"
+print("Trying to retrieve records modified between {} and {}".format(startDate, endDate))
+
+print("Attempting to obtain access token")
 #now form and encode the access credentials:
 
 credential = credentials.APIkey + ":" + credentials.clientSecret
@@ -229,9 +260,9 @@ summonFTP = ftplib.FTP("ftp.summon.serialssolutions.com", "gvsu", credentials.FT
 
 summonFTP.cwd('/updates') 
 
-filename = "STOR " + filename
+#filename = "STOR " + filename
 
-summonFTP.storbinary(filename, file)
+#summonFTP.storbinary(filename, file)
 
 summonFTP.quit()
 
