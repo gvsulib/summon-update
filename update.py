@@ -19,7 +19,6 @@ import pytz
 #access credentials, kept in separate file
 import credentials
 
-import os
 
 #libraries to send emails
 import smtplib
@@ -212,7 +211,7 @@ for id in ids:
 		print("{} of {} records written to file.".format(totalCount, numRecords))
 #close the file to reset the pointer
 file.close()
-
+#open the file for reading
 try:
         file = open(filename, "rb")
 except OSError as err:
@@ -222,9 +221,9 @@ except OSError as err:
 	error.write(str)
 	quit()
 
-size = os.path.getsize(filename)
 
-print("Attempting to transfer file of size {}".format(size))
+
+print("Attempting to transfer file of size {} to summon FTP server".format(size))
 
 summonFTP = ftplib.FTP("ftp.summon.serialssolutions.com", "gvsu", credentials.FTPPass)
 
