@@ -1,3 +1,6 @@
+*.log
+*.out
 __pycache__
 credentials.py
-updated_files.out
+*.out
+
