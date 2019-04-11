@@ -59,7 +59,7 @@ def sendEmail(msgString, subject, address, error=None, timestamp=""):
 
 eastern = pytz.timezone("US/Eastern")
 now = datetime.datetime.now(eastern)
-filename = "TEST_DO_NOT_USE_gvsu" + now.strftime("%Y-%m-%d") + ".out"
+filename = "gvsu" + now.strftime("%Y-%m-%d") + ".out"
 timestamp = now.strftime("%Y-%m-%d:%H:%M")
 
 if len(sys.argv) == 1:
@@ -256,15 +256,23 @@ except OSError as err:
 
 print("Attempting to transfer file to summon FTP server")
 
-summonFTP = ftplib.FTP("ftp.summon.serialssolutions.com", "gvsu", credentials.FTPPass)
+try:
+	summonFTP = ftplib.FTP("ftp.summon.serialssolutions.com", "gvsu", credentials.FTPPass)
 
-summonFTP.cwd('/updates') 
+	summonFTP.cwd('/updates') 
 
-filename = "STOR " + filename
+	filename = "STOR " + filename
 
-summonFTP.storbinary(filename, file)
+	summonFTP.storbinary(filename, file)
 
-summonFTP.quit()
+	summonFTP.quit()
+except:
+	sendEmail("Cannot move file to ftp server", "Sierra update Error", notificationEmail, error, timestamp)
+	print ("Unable to move file to ftp server")
+	str = timestamp + "Unable to move datafile to server."
+	error.write(str)
+	quit()
+
 
 
 
