@@ -223,7 +223,7 @@ except OSError as err:
 
 
 
-print("Attempting to transfer file of size {} to summon FTP server".format(size))
+print("Attempting to transfer file to summon FTP server")
 
 summonFTP = ftplib.FTP("ftp.summon.serialssolutions.com", "gvsu", credentials.FTPPass)
 
