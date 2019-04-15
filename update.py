@@ -39,7 +39,7 @@ except OSError as err:
 
 def sendEmail(msgString, subject):
 	notificationEmail = "felkerk@gvsu.edu"
-	result = subprocess.run("echo \"{}\" | /usr/bin/mail -a\"From:NOREPLY-GVSULIB@gvsu.edu\" -s \"{}\" {}".format(msgString, subject, notificationEmail), text=True)
+	result = subprocess.run("echo \"{}\" | /usr/bin/mail -a\"From:NOREPLY-GVSULIB@gvsu.edu\" -s \"{}\" {}".format(msgString, subject, notificationEmail), shell=True, stderr=subprocess.PIPE)
 	if result.returncode != 0:
 		print("Cannot send email:  {}".format(result.stderr))
 
