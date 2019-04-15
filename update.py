@@ -44,7 +44,7 @@ def sendEmail(msgString, subject, address, error=None, timestamp=""):
 	context = ssl.create_default_context()
 
 	with smtplib.SMTP('smtp-auth.exchange.gvsu.edu', 587) as server:
-		server.starttls(context=context) 
+		#server.starttls(context=context) 
 		server.login(credentials.emailAccountAddress, credentials.emailPassWord)
 		msg = MIMEMultipart("alternative")
 		msg["From"] = "noreply-library@gvsu.edu"
