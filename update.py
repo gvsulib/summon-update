@@ -53,7 +53,7 @@ if len(sys.argv) == 1:
 
 	#set the time parameters for the query.  We want any record updated since 1:00AM the previous day
 
-	offset = datetime.timedelta(hours=5)
+	offset = datetime.timedelta(hours=24)
 
 	startDate = now - offset
 
@@ -88,6 +88,8 @@ else:
 	
 	endDate = sys.argv[2]
 	startDate = sys.argv[1]
+
+
 
 
 
@@ -242,22 +244,22 @@ except OSError as err:
 
 print("Attempting to transfer file to summon FTP server")
 
-#try:
-#	summonFTP = ftplib.FTP("ftp.summon.serialssolutions.com", "gvsu", credentials.FTPPass)
+try:
+	summonFTP = ftplib.FTP("ftp.summon.serialssolutions.com", "gvsu", credentials.FTPPass)
 
-#	summonFTP.cwd('/updates') 
+	summonFTP.cwd('/updates') 
 
-#	filename = "STOR " + filename
+	filename = "STOR " + filename
 
-#	summonFTP.storbinary(filename, file)
+	summonFTP.storbinary(filename, file)
 
-#	summonFTP.quit()
-#except:
-#	sendEmail("Cannot move file to ftp server", "Sierra update Error", notificationEmail, error, timestamp)
-#	print ("Unable to move file to ftp server")
-#	str = timestamp + "Unable to move datafile to server."
-#	error.write(str)
-#	quit()
+	summonFTP.quit()
+except:
+	sendEmail("Cannot move file to ftp server", "Sierra update Error")
+	print ("Unable to move file to ftp server")
+	str = timestamp + "Unable to move datafile to server."
+	error.write(str)
+	quit()
 
 
 
