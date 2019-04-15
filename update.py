@@ -24,11 +24,10 @@ import credentials
 import sys
 
 #libraries to send emails
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
+import smtplib, ssl
 from email.mime.text import MIMEText
-from email import encoders
+from email.mime.multipart import MIMEMultipart
+
 
 notificationEmail = "felkerk@gvsu.edu"
 
@@ -42,19 +41,22 @@ except OSError as err:
 
 
 def sendEmail(msgString, subject, address, error=None, timestamp=""):
-	server = smtplib.SMTP('smtp.gvsu.edu', 25)
-	msg = MIMEMultipart()
-	#msg["From"] = "felkerk@gvsu.edu"
-	msg["To"] = address
-	msg["Subject"] = subject
-	msg.attach(MIMEText(msgString, 'plain'))
-	try:
-		server.sendmail("felkerk@gvsu.edu", address, msg.as_string())         
+	context = ssl.create_default_context()
+
+	with smtplib.SMTP_SSL('smtp-auth.exchange.gvsu.edu', 587, context=context) as server:
+		server.login(credentials.emailAccountAddress, credentials.emailPassWord)
+		msg = MIMEMultipart("alternative")
+		msg["From"] = "noreply-library@gvsu.edu"
+		msg["To"] = address
+		msg["Subject"] = subject
+		msg.attach(MIMEText(msgString, 'plain'))
+		try:
+			server.sendmail("felkerk@gvsu.edu", address, msg.as_string())         
    
-	except smtplib.SMTPException as err:
-		if error is not None:
-			error.write(timestamp + 'Error: unable to send email: {}\n'.format(err))
-		print("Error: unable to send email")
+		except smtplib.SMTPException as err:
+			if error is not None:
+				error.write(timestamp + 'Error: unable to send email: {}\n'.format(err))
+			print("Error: unable to send email")
 
 
 eastern = pytz.timezone("US/Eastern")
@@ -67,7 +69,7 @@ if len(sys.argv) == 1:
 
 	#set the time parameters for the query.  We want any record updated since 1:00AM the previous day
 
-	offset = datetime.timedelta(hours=24)
+	offset = datetime.timedelta(hours=5)
 
 	startDate = now - offset
 
@@ -256,22 +258,22 @@ except OSError as err:
 
 print("Attempting to transfer file to summon FTP server")
 
-try:
-	summonFTP = ftplib.FTP("ftp.summon.serialssolutions.com", "gvsu", credentials.FTPPass)
+#try:
+#	summonFTP = ftplib.FTP("ftp.summon.serialssolutions.com", "gvsu", credentials.FTPPass)
 
-	summonFTP.cwd('/updates') 
+#	summonFTP.cwd('/updates') 
 
-	filename = "STOR " + filename
+#	filename = "STOR " + filename
 
-	summonFTP.storbinary(filename, file)
+#	summonFTP.storbinary(filename, file)
 
-	summonFTP.quit()
-except:
-	sendEmail("Cannot move file to ftp server", "Sierra update Error", notificationEmail, error, timestamp)
-	print ("Unable to move file to ftp server")
-	str = timestamp + "Unable to move datafile to server."
-	error.write(str)
-	quit()
+#	summonFTP.quit()
+#except:
+#	sendEmail("Cannot move file to ftp server", "Sierra update Error", notificationEmail, error, timestamp)
+#	print ("Unable to move file to ftp server")
+#	str = timestamp + "Unable to move datafile to server."
+#	error.write(str)
+#	quit()
 
 
 
