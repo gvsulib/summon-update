@@ -22,43 +22,26 @@ import credentials
 
 #need this to grab command-line arguments
 import sys
-
-#libraries to send emails
-import smtplib, ssl
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import subprocess 
 
 
-notificationEmail = "felkerk@gvsu.edu"
+
+
 
 #open error log
 try:
 	error = open("error.log", "w+")
 except OSError as err:
 	print ("Unable to open error logfile: {0}".format(err))
-	sendEmail("Unable to open error log for writing, terminating script: {0}".format(err), "Error Updating Summon", notificationEmail)
+	sendEmail("Unable to open error log for writing, terminating script: {0}".format(err), "Error Updating Summon")
 	quit()
 
 
-def sendEmail(msgString, subject, address, error=None, timestamp=""):
-	context = ssl.create_default_context()
-
-	with smtplib.SMTP('smtp-auth.exchange.gvsu.edu', 587) as server:
-		#server.starttls(context=context) 
-		server.login(credentials.emailAccountAddress, credentials.emailPassWord)
-		msg = MIMEMultipart("alternative")
-		msg["From"] = "noreply-library@gvsu.edu"
-		msg["To"] = address
-		msg["Subject"] = subject
-		msg.attach(MIMEText(msgString, 'plain'))
-		try:
-			server.sendmail("felkerk@gvsu.edu", address, msg.as_string())         
-   
-		except smtplib.SMTPException as err:
-			if error is not None:
-				error.write(timestamp + 'Error: unable to send email: {}\n'.format(err))
-			print("Error: unable to send email")
-
+def sendEmail(msgString, subject):
+	notificationEmail = "felkerk@gvsu.edu"
+	result = subprocess.run("echo \"{}\" | /usr/bin/mail -a\"From:NOREPLY-GVSULIB@gvsu.edu\" -s \"{}\" {}".format(msgString, subject, notificationEmail), text=True)
+	if result.returncode != 0:
+		print("Cannot send email:  {}".format(result.stderr))
 
 eastern = pytz.timezone("US/Eastern")
 now = datetime.datetime.now(eastern)
@@ -126,7 +109,7 @@ r = requests.post('https://library.catalog.gvsu.edu/iii/sierra-api/v5/token', da
 #if the request fails, terminate and raise an error
 
 if r.status_code != 200:
-	sendEmail("Error Authenticating to the Sierra Server, Check error log", "Sierra update Error", notificationEmail, error, timestamp)
+	sendEmail("Error Authenticating to the Sierra Server, Check error log", "Sierra update Error")
 	error.write(timestamp + " " + str(r.status_code) + " " + r.text)
 	print("Unable to get authentication token from sierra, check error log for more data")
 	quit()
@@ -151,13 +134,13 @@ r = requests.get(url, params=params, headers=headers)
 
 
 if r.status_code == 404:
-	sendEmail("No changed records found", "Sierra update", notificationEmail, error, timestamp)
+	sendEmail("No changed records found", "Sierra update")
 	error.write(timestamp + " " + str(r.status_code) + " " + r.text + "\n")
 	print("No changed records found")
 	quit()
 
 if r.status_code != 200:
-        sendEmail("Error getting bib records from the Sierra Server, Check error log", "Sierra update Error", notificationEmail, error, timestamp)
+        sendEmail("Error getting bib records from the Sierra Server, Check error log", "Sierra update Error")
         error.write(timestamp + " " + str(r.status_code) + " " + r.text)
         print("Error Getting bib records from sierra, check error log for more data")
         quit()
@@ -171,7 +154,7 @@ ids = json_response["entries"]
 
 
 if not ids:
-	sendEmail("No changed records found", "Sierra update", notificationEmail, error, timestamp)
+	sendEmail("No changed records found", "Sierra update")
 	error.write(timestamp + " " + str(r.status_code) + " " + r.text)
 	print("No changed records found")
 	quit()
@@ -192,7 +175,7 @@ print("Trying to open datafile for writing...")
 try:
         file = open(filename, "w+")
 except OSError as err:
-	sendEmail("Cannot open datafile for writing", "Sierra update Error", notificationEmail, error, timestamp)
+	sendEmail("Cannot open datafile for writing", "Sierra update Error")
 	print ("Unable to open datafile: {0}".format(err))
 	str = timestamp + " " + "Unable to open datafile: {0}".format(err)
 	error.write(str)
@@ -221,7 +204,7 @@ for id in ids:
 		r = requests.get(url, params=params, headers=headers)
 
 		if r.status_code != 200:
-			sendEmail("Error generating Marc records, Check error log", "Sierra update Error", notificationEmail, error, timestamp)
+			sendEmail("Error generating Marc records, Check error log", "Sierra update Error")
 			error.write(timestamp + " " + str(r.status_code) + " " + r.text)
 			error.write(r.url)
 			print("Unable to generate Marc records, check error log for more data")
@@ -234,7 +217,7 @@ for id in ids:
 		r = requests.get(marcURL, headers=headers)
 
 		if r.status_code != 200:
-			sendEmail("Error retrieving Marc record file, Check error log", "Sierra update Error", notificationEmail, error, timestamp)
+			sendEmail("Error retrieving Marc record file, Check error log", "Sierra update Error")
 			error.write(timestamp + " " + str(r.status_code) + " " + r.text)
 			error.write(r.url)
 			print("Unable to generate Marc records, check error log for more data")
@@ -249,7 +232,7 @@ file.close()
 try:
         file = open(filename, "rb")
 except OSError as err:
-	sendEmail("Cannot open datafile for reading", "Sierra update Error", notificationEmail, error, timestamp)
+	sendEmail("Cannot open datafile for reading", "Sierra update Error")
 	print ("Unable to open datafile: {0}".format(err))
 	str = timestamp + " " + "Unable to open datafile: {0}".format(err)
 	error.write(str)
@@ -282,7 +265,7 @@ print("Attempting to transfer file to summon FTP server")
 msg = "Uploaded {} records".format(numRecords)
 
 
-sendEmail(msg, "Summon Update completed", notificationEmail, error, timestamp)
+sendEmail(msg, "Summon Update completed")
 
 
 error.close()
