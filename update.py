@@ -262,7 +262,7 @@ except:
 	quit()
 
 
-
+print("File moved to server, process complete.")
 
 msg = "Uploaded {} records".format(numRecords)
 
