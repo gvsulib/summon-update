@@ -30,7 +30,7 @@ import subprocess
 
 #open error log
 try:
-	error = open("error.log", "w+")
+	error = open("summon-update/error.log", "w+")
 except OSError as err:
 	print ("Unable to open error logfile: {0}".format(err))
 	sendEmail("Unable to open error log for writing, terminating script: {0}".format(err), "Error Updating Summon")
@@ -175,7 +175,7 @@ print("Trying to open datafile for writing...")
 
 #open data logfile
 try:
-        file = open(filename, "w+")
+        file = open("summon-update/" + filename, "w+")
 except OSError as err:
 	sendEmail("Cannot open datafile for writing", "Sierra update Error")
 	print ("Unable to open datafile: {0}".format(err))
