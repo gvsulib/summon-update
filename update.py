@@ -30,10 +30,9 @@ import subprocess
 
 #open error log
 try:
-	error = open("summon-update/error.log", "w+")
+	error = open("summon_error.log", "w+")
 except OSError as err:
 	print ("Unable to open error logfile: {0}".format(err))
-	sendEmail("Unable to open error log for writing, terminating script: {0}".format(err), "Error Updating Summon")
 	quit()
 
 
@@ -53,15 +52,15 @@ if len(sys.argv) == 1:
 
 	#set the time parameters for the query.  We want any record updated since 1:00AM the previous day
 
-	offset = datetime.timedelta(hours=24)
+	offset = datetime.timedelta(hours=10)
 
-	startDate = now - offset
+	date = now - offset
 
-	startDate = startDate.strftime("%Y-%m-%dT%H:%M:%S")
+	startDate = date.strftime("%Y-%m-%dT01:00:00")
 
 	#format dates for use in query string
 
-	endDate = now.strftime("%Y-%m-%dT%H:%M:%S")
+	endDate = date.strftime("%Y-%m-%dT23:00:00")
 else:
 	if len(sys.argv) < 3:
 		print("You must supply both a start and end date.")
@@ -175,7 +174,7 @@ print("Trying to open datafile for writing...")
 
 #open data logfile
 try:
-        file = open("summon-update/" + filename, "w+")
+        file = open(filename, "w+")
 except OSError as err:
 	sendEmail("Cannot open datafile for writing", "Sierra update Error")
 	print ("Unable to open datafile: {0}".format(err))
