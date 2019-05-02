@@ -26,19 +26,25 @@ import subprocess
 
 
 
-
-
+path = "/home/ubuntu/summon-update/"
+notificationEmail = "morganm@gvsu.edu"
 #open error log
 try:
-	error = open("summon_error.log", "w+")
+	error = open("{}summon_error.log".format(path), "w+")
 except OSError as err:
 	print ("Unable to open error logfile: {0}".format(err))
 	quit()
 
 
-def sendEmail(msgString, subject):
-	notificationEmail = "morganm@gvsu.edu"
-	result = subprocess.run("echo \"{}\" | /usr/bin/mail -a \"From:gvsulib@gvsu.edu\" -s \"{}\" {}".format(msgString, subject, notificationEmail), shell=True, stderr=subprocess.PIPE)
+def sendEmail(msgString, subject, attachment=""):
+	if attachment != "":
+
+		attachment = path + attachment
+		result = subprocess.run("echo \"{}\" | /usr/bin/mail -a \"From:gvsulib@gvsu.edu\" -s \"{}\" {} -A {}".format(msgString, subject, notificationEmail, attachment), shell=True, stderr=subprocess.PIPE)
+	else:
+		result = subprocess.run("echo \"{}\" | /usr/bin/mail -a \"From:gvsulib@gvsu.edu\" -s \"{}\" {}".format(msgString, subject, notificationEmail), shell=True, stderr=subprocess.PIPE)
+
+
 	if result.returncode != 0:
 		print("Cannot send email:  {}".format(result.stderr))
 
@@ -155,8 +161,8 @@ ids = json_response["entries"]
 
 
 if not ids:
-	sendEmail("No changed records found", "Sierra update")
 	error.write(timestamp + " " + str(r.status_code) + " " + r.text)
+	sendEmail("No changed records found", "Sierra update")
 	print("No changed records found")
 	quit()
 
@@ -174,7 +180,7 @@ print("Trying to open datafile for writing...")
 
 #open data logfile
 try:
-        file = open(filename, "w+")
+        file = open(path + filename, "w+")
 except OSError as err:
 	sendEmail("Cannot open datafile for writing", "Sierra update Error")
 	print ("Unable to open datafile: {0}".format(err))
@@ -248,9 +254,9 @@ try:
 
 	summonFTP.cwd('/updates') 
 
-	filename = "STOR " + filename
+	tempname = "STOR " + filename
 
-	summonFTP.storbinary(filename, file)
+	summonFTP.storbinary(tempname, file)
 
 	summonFTP.quit()
 except:
@@ -264,9 +270,9 @@ except:
 print("File moved to server, process complete.")
 
 msg = "Uploaded {} records".format(numRecords)
+print(filename)
 
-
-sendEmail(msg, "Summon Update completed")
+sendEmail(msg, "Summon Update completed", filename)
 
 
 error.close()
