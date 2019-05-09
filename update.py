@@ -39,7 +39,6 @@ except OSError as err:
 def sendEmail(msgString, subject, attachment=""):
 	if attachment != "":
 
-		attachment = path + attachment
 		result = subprocess.run("echo \"{}\" | /usr/bin/mail -a \"From:gvsulib@gvsu.edu\" -s \"{}\" {} -A {}".format(msgString, subject, notificationEmail, attachment), shell=True, stderr=subprocess.PIPE)
 	else:
 		result = subprocess.run("echo \"{}\" | /usr/bin/mail -a \"From:gvsulib@gvsu.edu\" -s \"{}\" {}".format(msgString, subject, notificationEmail), shell=True, stderr=subprocess.PIPE)
@@ -270,9 +269,9 @@ except:
 print("File moved to server, process complete.")
 
 msg = "Uploaded {} records".format(numRecords)
-print(filename)
+#print(filename)
 
-sendEmail(msg, "Summon Update completed", filename)
+sendEmail(msg, "Summon Update completed, uploaded {} records uploaded.".format(numRecords))
 
 
 error.close()
